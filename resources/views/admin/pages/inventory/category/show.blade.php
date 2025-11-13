@@ -1,0 +1,36 @@
+<div class="card-body">
+    <table class="table table-bordered">
+        <tr>
+            <th class="w-25">Name</th>
+            <td class="w-75">{{ $category->name }}</td>
+        </tr>
+        <tr>
+            <th class="w-25">Slug</th>
+            <td class="w-75">{{ $category->slug }}</td>
+        </tr>
+        <tr>
+            <th>Parent</th>
+            <td>{{ $category->parent->name ?? '-' }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{!! defaultBadge(ucfirst(config('constants.status.' . $category->status)), 25) !!}</td>
+        </tr>
+        <tr>
+            <th>Received-At</th>
+            <td>{{ $category->created_at->format('d M Y, h:i A') }}</td>
+        </tr>
+        <tr>
+            <th>Desciption</th>
+            <td>{!! $category->description !!}</td>
+        </tr>
+        @isset($category->media)
+            <tr>
+                <th>Image</th>
+                <td>
+                    <img src="{{ $category->media->path }}" alt="{{ $category->slug }}">
+                </td>
+            </tr>
+        @endisset
+    </table>
+</div>
