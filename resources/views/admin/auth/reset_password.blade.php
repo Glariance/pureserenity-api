@@ -7,7 +7,7 @@
                 <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
                     <div class="col mx-auto">
                         <div class="mb-4 text-center">
-                            {{-- <img src="{{ asset(getSetting('site logo', 'adminassets/images/logo-img.png')) }}" width="180" alt="" /> --}}
+                            {{-- <img src="{{ asset(getSetting('site logo', 'adminassets/images/pureserenity-logo.png')) }}" width="180" alt="" /> --}}
                         </div>
                         <div class="card">
                             <div class="card-body">
@@ -17,7 +17,7 @@
                                             method="post">
                                             @csrf
                                             <div class="text-center">
-                                                <img src="{{ asset(getSetting('site logo', 'adminassets/images/logo-img.png')) }}"
+                                                <img src="{{ asset(getSetting('site logo', 'adminassets/images/pureserenity-logo.png')) }}"
                                                     width="200" alt="" />
                                             </div>
                                             <h4 class="mt-5 font-weight-bold">Genrate New Password</h4>

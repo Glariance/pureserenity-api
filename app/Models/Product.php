@@ -10,6 +10,7 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'amazon_link',
         'base_price',
         'stock',
         'has_variations',

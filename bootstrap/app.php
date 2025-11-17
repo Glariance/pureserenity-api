@@ -19,17 +19,39 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/admin.php'));
         },
     )
+
+    // --------------------------
+    // CSRF EXCEPTION MIDDLEWARE
+    // --------------------------
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+    })
+
+    // --------------------------
+    // OTHER MIDDLEWARE
+    // --------------------------
     ->withMiddleware(function (Middleware $middleware) {
+
         $middleware->redirectGuestsTo(function (Request $request) {
-            return $request->is('admin/*') ? route('admin.login') : route('login');
+            return $request->is('admin/*')
+                ? route('admin.login')
+                : route('login');
         });
-        $middleware->redirectUsersTo(function(Request $request) {
-            return $request->user()->isAdmin() ? 'admin/dashboard' : '/home';
+
+        $middleware->redirectUsersTo(function (Request $request) {
+            return $request->user()->isAdmin()
+                ? 'admin/dashboard'
+                : '/home';
         });
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->create();

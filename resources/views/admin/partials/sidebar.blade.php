@@ -1,11 +1,11 @@
 <div class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
         <div>
-            <img src="{{ asset(getSetting('site icon', 'adminassets/images/logo-img.png')) }}" class="logo-icon"
-                alt="logo icon">
+            <img src="{{ asset(getSetting('site icon', 'adminassets/images/pureserenity-logo.png')) }}"
+                class="logo-icon" alt="logo icon">
         </div>
         <div>
-            <h4 class="logo-text">{{ getSetting('site name', 'Dashtreme') }}</h4>
+            <h4 class="logo-text">{{ getSetting('site name', 'PureSerenity') }}</h4>
         </div>
         <div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i>
         </div>
@@ -74,9 +74,9 @@
                 <div class="menu-title">Inventory</div>
             </a>
             <ul>
-                <li> <a href="{{ route('admin.inventory.brand.index') }}"><i class="bx bx-right-arrow-alt"></i>Brands</a></li>
+                {{-- <li> <a href="{{ route('admin.inventory.brand.index') }}"><i class="bx bx-right-arrow-alt"></i>Brands</a></li> --}}
                 <li> <a href="{{ route('admin.inventory.category.index') }}"><i class="bx bx-right-arrow-alt"></i>Category</a></li>
-                <li> <a href="{{ route('admin.inventory.attributes.index') }}"><i class="bx bx-right-arrow-alt"></i>Attributes & Option</a></li>
+                {{-- <li> <a href="{{ route('admin.inventory.attributes.index') }}"><i class="bx bx-right-arrow-alt"></i>Attributes & Option</a></li> --}}
                 <li> <a href="{{ route('admin.inventory.product.create') }}"><i class="bx bx-right-arrow-alt"></i>Create Product</a></li>
                 <li> <a href="{{ route('admin.inventory.product.index') }}"><i class="bx bx-right-arrow-alt"></i>Products</a></li>
             </ul>

@@ -81,7 +81,7 @@
     <div class="email-wrapper">
         <!-- Header Logo -->
         <div class="email-header">
-            <img src="{{ asset(getSetting('site logo', 'adminassets/images/logo-img.png')) }}"
+            <img src="{{ asset(getSetting('site logo', 'adminassets/images/pureserenity-logo.png')) }}"
                 alt="{{ getSetting('site name', config('app.name')) }} Logo">
         </div>
 

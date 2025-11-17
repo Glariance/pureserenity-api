@@ -15,7 +15,7 @@
                                     @csrf
                                     <div class="p-4 rounded  border">
                                         <div class="text-center">
-                                            <img src="{{ asset(getSetting('site logo', 'adminassets/images/logo-img.png')) }}" width="200"
+                                            <img src="{{ asset(getSetting('site logo', 'adminassets/images/pureserenity-logo.png')) }}" width="200"
                                                 alt="" />
                                         </div>
                                         <h4 class="mt-5 font-weight-bold">Forgot Password?</h4>

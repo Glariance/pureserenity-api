@@ -9,13 +9,15 @@ $(function () {
             let formData = new FormData(this);
             let actionUrl = form.attr("action");
             let files = (typeof getSelectedFile === 'function') ? getSelectedFile() : null; // Get file(s) from Dropzone
+            const dropzoneArrayField = form.data('dropzoneArrayField') || 'file[]';
+            const dropzoneSingleField = form.data('dropzoneSingleField') || 'file';
             if (files) {
                 if (Array.isArray(files)) {
                     files.forEach((f, i) => {
-                        formData.append(`file[]`, f);
+                        formData.append(dropzoneArrayField, f);
                     });
                 } else {
-                    formData.append('file', files);
+                    formData.append(dropzoneSingleField, files);
                 }
             }
             $.ajax({

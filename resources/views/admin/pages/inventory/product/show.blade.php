@@ -16,24 +16,12 @@
             <th>Category</th>
             <td>{{ $product->category->name ?? '-' }}</td>
         </tr>
-        @if ($product->has_variations)
+        @if ($product->amazon_link)
             <tr>
-                <th>Variations</th>
-                <td>
-                    @foreach ($product->variations as $variation)
-                        <div><strong>Price:</strong> ${{ $variation->price ?? 'N/A' }}</div>
-                        <div><strong>Stock:</strong> {{ $variation->stock ?? 'N/A' }}</div>
-                        <div><strong>Variation(s):</strong>
-                            {{-- @dd($variation->options) --}}
-                            @foreach ($variation->options as $option)
-                                {!! defaultBadge($option['name'] . ': ' . $option['value'], 25) !!}
-                            @endforeach
-                            @if (!$loop->last)
-                                <hr>
-                            @endif
-                        </div>
-                    @endforeach
-                </td>
+                <th>Amazon Link</th>
+                <td><a href="{{ $product->amazon_link }}" target="_blank" rel="noopener">
+                        {{ $product->amazon_link }}
+                    </a></td>
             </tr>
         @endif
         <tr>
