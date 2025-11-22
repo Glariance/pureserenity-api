@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\AboutController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\PetController;
+use App\Http\Controllers\Api\PrivacyController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -17,7 +21,7 @@ Route::get('/media/{path}', function (string $path) {
     return Storage::disk('public')->response($path);
 })->where('path', '.*')->name('media.asset');
 
-Route::get('/', function (Request $request, AboutController $controller) {
+Route::get('/', function (Request $request, PrivacyController $controller) {
     $response = $controller->show($request);
 
     dd($response->getData(true));

@@ -17,16 +17,8 @@
             <td>{{ $contactInquiry->email }}</td>
         </tr>
         <tr>
-            <th>Phone</th>
-            <td>{{ $contactInquiry->phone }}</td>
-        </tr>
-        <tr>
             <th>Subject</th>
             <td>{{ $contactInquiry->subject }}</td>
-        </tr>
-        <tr>
-            <th>Type</th>
-            <td>{{ ucfirst($contactInquiry->type) }}</td>
         </tr>
         {{-- <tr>
             <th>Status</th>

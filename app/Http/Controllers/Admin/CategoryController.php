@@ -26,9 +26,8 @@ class CategoryController extends Controller
 
                     $showBtn = '<a href="javascript:;" onclick="showAjaxModal(\'View Category Details\', \'view\', \'' . $showUrl . '\')" class="btn btn-light"><i class="lni lni-eye"></i></a>';
                     $editBtn = '<a href="javascript:;" onclick="showAjaxModal(\'Edit Category Details\', \'Update\', \'' . $editUrl . '\')" class="btn btn-light"><i class="bx bx-edit-alt"></i></a>';
-                    $deleteBtn = '<a href="javascript:;" onclick="deleteTag(' . $row->id . ', `' . route('admin.inventory.category.destroy', $row->id) . '`)" class="btn btn-light"><i class="bx bx-trash"></i></a>';
-                    // $deleteBtn
-                    return $showBtn . ' ' . $editBtn;
+                    $deleteBtn = '<a href="javascript:;" onclick="deleteTag(' . $row->id . ', `' . route('admin.inventory.category.destroy', $row->id) . '`)" class="btn btn-light text-danger"><i class="bx bx-trash"></i></a>';
+                    return $showBtn . ' ' . $editBtn . ' ' . $deleteBtn;
                 })
                 ->editColumn('parent_id', function ($row) {
                     return $row->parent->name ?? "";
@@ -155,27 +154,30 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        // try {
-        //     DB::beginTransaction();
+        $category = Category::with('media')->findOrFail($id);
 
-        //     // Delete associated media file if exists
-        //     $media = $category->media()->first();
-        //     if ($media) {
-        //         $filePath = public_path($media->path);
-        //         if (file_exists($filePath)) {
-        //             unlink($filePath);
-        //         }
-        //         $media->delete();
-        //     }
+        DB::beginTransaction();
+        try {
+            $category->media()->each(function ($media) {
+                if ($media->path) {
+                    $path = ltrim(str_replace('storage/', '', $media->path), '/');
+                    if ($path) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+                    }
+                }
+                $media->delete();
+            });
 
-        //     // Delete the category
-        //     $category->delete();
+            $category->delete();
 
-        //     DB::commit();
-        //     return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     return redirect()->back()->withErrors(['error' => 'Failed to delete category: ' . $e->getMessage()]);
-        // }
+            DB::commit();
+            return response()->json(['success' => 'Category deleted successfully.']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to delete category.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

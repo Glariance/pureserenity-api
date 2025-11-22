@@ -4,21 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CmsPage;
-use App\Models\ContactInquiry;
-use App\Models\GeneralSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class ContactController extends Controller
+class PrivacyController extends Controller
 {
-    /**
-     * Retrieve CMS-driven contact page content plus general settings.
-     */
     public function show(Request $request): JsonResponse
     {
-        $slug = $request->query('slug', 'contact');
+        $slug = $request->query('slug', 'privacy');
 
         $page = CmsPage::query()
             ->where('page_slug', $slug)
@@ -28,9 +23,9 @@ class ContactController extends Controller
             ])
             ->first();
 
-        if ($page === null && $slug !== 'contact') {
+        if ($page === null && $slug !== 'privacy-policy') {
             $page = CmsPage::query()
-                ->where('page_slug', 'contact')
+                ->where('page_slug', 'privacy-policy')
                 ->with([
                     'sections' => fn($q) => $q->orderBy('section_sort_order'),
                     'sections.fields' => fn($q) => $q->orderBy('field_group')->orderBy('id'),
@@ -40,7 +35,7 @@ class ContactController extends Controller
 
         if ($page === null) {
             $page = CmsPage::query()
-                ->where('page_slug', 'contact-us')
+                ->where('page_slug', 'privacy')
                 ->with([
                     'sections' => fn($q) => $q->orderBy('section_sort_order'),
                     'sections.fields' => fn($q) => $q->orderBy('field_group')->orderBy('id'),
@@ -49,10 +44,6 @@ class ContactController extends Controller
         }
 
         $sections = $page ? $this->formatSections($page->sections) : [];
-
-        $settings = GeneralSetting::all()
-            ->mapWithKeys(fn($setting) => [$setting->key => $setting->value])
-            ->toArray();
 
         return response()->json([
             'page' => [
@@ -66,36 +57,7 @@ class ContactController extends Controller
                 ],
                 'sections' => $sections,
             ],
-            'settings' => $settings,
         ]);
-    }
-
-    /**
-     * Store a contact inquiry submitted from the storefront.
-     */
-    public function store(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'message' => ['required', 'string', 'max:2000'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'subject' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        ContactInquiry::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'subject' => $validated['subject'] ?? 'Website Inquiry',
-            'message' => $validated['message'],
-            'is_read' => 0,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Thank you for reaching out. Our team will get back to you shortly.',
-        ], 201);
     }
 
     protected function formatSections(Collection $sections): array

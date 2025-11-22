@@ -37,15 +37,40 @@
                         </div>
 
                         <div class="col-md-12">
+                            <label class="form-label">Category</label>
+                            <select name="category_id" class="form-select" required>
+                                <option value="" disabled>Select category</option>
+                                @foreach ($categories as $parent)
+                                    <option value="" disabled>— {{ $parent->name }} —</option>
+                                    @foreach ($parent->children as $child)
+                                        <option value="{{ $child->id }}"
+                                            {{ old('category_id', $product->category_id) == $child->id ? 'selected' : '' }}>
+                                            {{ $parent->name }} > {{ $child->name }}
+                                        </option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
                             <label class="form-label">Description</label>
                             <textarea name="description" rows="6" class="form-control myEditor">{{ old('description', $product->description) }}</textarea>
                         </div>
 
+                        <div class="col-md-12">
+                            <label class="form-label d-block">Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="status-switch" name="status"
+                                    value="1" {{ old('status', $product->status) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="status-switch">{{ old('status', $product->status) ? 'Active' : 'Inactive' }}</label>
+                            </div>
+                        </div>
+
                         @if ($product->mediaFeatured)
-                            <div class="col-md-12">
+                            <div class="col-md-12" id="current-image-wrapper">
                                 <label class="form-label d-block">Current Image</label>
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="{{ asset('storage/' . $product->mediaFeatured->path) }}" alt="Current image"
+                                    <img id="current-image" src="{{ asset('storage/' . $product->mediaFeatured->path) }}" alt="Current image"
                                         class="rounded border" width="200">
                                     <small class="text-muted">Uploading a new image will replace this one.</small>
                                 </div>
@@ -69,6 +94,15 @@
     </div>
 @endsection
 
+@push('styles')
+    <style>
+        /* Improve Dropzone filename readability */
+        .dropzone .dz-preview .dz-filename span {
+            color: #fff !important;
+        }
+    </style>
+@endpush
+
 @push('scripts')
     <script>
         $(function() {
@@ -80,7 +114,16 @@
 
             ajaxPost('#product-form', '#product-btn', function(response) {
                 successMessage(response.success);
-                window.location = "{{ route('admin.inventory.product.index') }}"
+                if (window.productDropzone) {
+                    window.productDropzone.removeAllFiles(true);
+                }
+                if (response.product && response.product.media && response.product.media.length) {
+                    const featured = response.product.media.find(m => m.is_featured === 1) || response.product.media[0];
+                    if (featured && featured.path) {
+                        $('#current-image').attr('src', "{{ asset('storage') }}/" + featured.path)
+                            .closest('#current-image-wrapper').show();
+                    }
+                }
             });
         });
 
@@ -109,6 +152,8 @@
                     });
                 }
             });
+
+            window.productDropzone = myDropzone;
 
             window.getSelectedFile = function() {
                 return selectedFile;

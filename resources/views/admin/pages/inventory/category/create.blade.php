@@ -42,11 +42,15 @@
 
         <!-- Status -->
         <div class="col-md-12">
-            <label for="status" class="form-label">Status</label>
-            <select name="status" class="form-select" required>
-                <option value="1" @selected(isset($category) && $category->status === 1)>Active</option>
-                <option value="0" @selected(isset($category) && $category->status === 0)>Inactive</option>
-            </select>
+            <label class="form-label d-block">Status</label>
+            <input type="hidden" name="status" value="0">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="status-switch" name="status" value="1"
+                    {{ isset($category) ? ($category->status ? 'checked' : '') : 'checked' }}>
+                <label class="form-check-label" for="status-switch" id="status-switch-label">
+                    {{ isset($category) ? ($category->status ? 'Active' : 'Inactive') : 'Active' }}
+                </label>
+            </div>
         </div>
 
         <!-- Dropzone Image Upload -->
@@ -120,6 +124,11 @@
         window.getSelectedFile = function() {
             return selectedFile;
         }
+
+        // Status switch label update
+        $('#status-switch').on('change', function() {
+            $('#status-switch-label').text($(this).is(':checked') ? 'Active' : 'Inactive');
+        });
 
         // Select2 initialization
         $('select').each(function() {

@@ -35,6 +35,22 @@
                         </div>
 
                         <div class="col-md-12">
+                            <label class="form-label">Category</label>
+                            <select name="category_id" class="form-select" required>
+                                <option value="" disabled {{ old('category_id') ? '' : 'selected' }}>Select category</option>
+                                @foreach ($categories as $parent)
+                                    <option value="" disabled>— {{ $parent->name }} —</option>
+                                    @foreach ($parent->children as $child)
+                                        <option value="{{ $child->id }}"
+                                            {{ old('category_id') == $child->id ? 'selected' : '' }}>
+                                            {{ $parent->name }} > {{ $child->name }}
+                                        </option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
                             <label class="form-label">Description</label>
                             <textarea name="description" rows="6" class="form-control myEditor" placeholder="Write a short product description...">{{ old('description') }}</textarea>
                         </div>
@@ -54,6 +70,15 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <style>
+        /* Improve Dropzone filename readability */
+        .dropzone .dz-preview .dz-filename span {
+            color: #fff !important;
+        }
+    </style>
+@endpush
 
 @push('scripts')
     <script>

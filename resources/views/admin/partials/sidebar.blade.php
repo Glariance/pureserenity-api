@@ -1,8 +1,8 @@
 <div class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
         <div>
-            <img src="{{ asset(getSetting('site icon', 'adminassets/images/pureserenity-logo.png')) }}"
-                class="logo-icon" alt="logo icon">
+            <img src="{{ asset(getSetting('site icon', 'adminassets/images/pureserenity-logo.png')) }}" class="logo-icon"
+                alt="logo icon">
         </div>
         <div>
             <h4 class="logo-text">{{ getSetting('site name', 'PureSerenity') }}</h4>
@@ -19,38 +19,7 @@
                 <div class="menu-title">Dashboard</div>
             </a>
         </li>
-        <li>
-            <a href="{{ route('admin.newsletter-management.index') }}">
-                <div class="parent-icon"><i class='bx bx-cookie'></i>
-                </div>
-                <div class="menu-title">Newsletter Management</div>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('admin.contact-inquiry.index') }}">
-                <div class="parent-icon"><i class='bx bx-cookie'></i>
-                </div>
-                <div class="menu-title">Contact Inquries</div>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('admin.settings') }}">
-                <div class="parent-icon"><i class='bx bx-cookie'></i>
-                </div>
-                <div class="menu-title">Settings</div>
-            </a>
-        </li>
-        <li>
-            <a href="javascript:;" class="has-arrow">
-                <div class="parent-icon"><i class='fadeIn animated bx bx-folder-plus'></i>
-                </div>
-                <div class="menu-title">Blogs</div>
-            </a>
-            <ul>
-                <li> <a href="{{ route('admin.blogs.index') }}"><i class="bx bx-right-arrow-alt"></i>Blogs List</a></li>
-                <li> <a href="{{ route('admin.tags.index') }}"><i class="bx bx-right-arrow-alt"></i>Tags</a></li>
-            </ul>
-        </li>
+
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-folder-plus'></i>
@@ -67,6 +36,7 @@
                 @endforeach
             </ul>
         </li>
+
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-cart'></i>
@@ -75,11 +45,62 @@
             </a>
             <ul>
                 {{-- <li> <a href="{{ route('admin.inventory.brand.index') }}"><i class="bx bx-right-arrow-alt"></i>Brands</a></li> --}}
-                <li> <a href="{{ route('admin.inventory.category.index') }}"><i class="bx bx-right-arrow-alt"></i>Category</a></li>
+                <li> <a href="{{ route('admin.inventory.category.index') }}"><i
+                            class="bx bx-right-arrow-alt"></i>Category</a></li>
                 {{-- <li> <a href="{{ route('admin.inventory.attributes.index') }}"><i class="bx bx-right-arrow-alt"></i>Attributes & Option</a></li> --}}
-                <li> <a href="{{ route('admin.inventory.product.create') }}"><i class="bx bx-right-arrow-alt"></i>Create Product</a></li>
-                <li> <a href="{{ route('admin.inventory.product.index') }}"><i class="bx bx-right-arrow-alt"></i>Products</a></li>
+                <li> <a href="{{ route('admin.inventory.product.create') }}"><i
+                            class="bx bx-right-arrow-alt"></i>Create Product</a></li>
+                <li> <a href="{{ route('admin.inventory.product.index') }}"><i
+                            class="bx bx-right-arrow-alt"></i>Products</a></li>
             </ul>
         </li>
+
+
+        <li>
+            <a href="{{ route('admin.settings') }}">
+                <div class="parent-icon"><i class='bx bx-cookie'></i>
+                </div>
+                <div class="menu-title">Settings</div>
+            </a>
+        </li>
+
+        {{-- <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-folder-plus'></i>
+                </div>
+                <div class="menu-title">Blogs</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('admin.blogs.index') }}"><i class="bx bx-right-arrow-alt"></i>Blogs List</a></li>
+                <li> <a href="{{ route('admin.tags.index') }}"><i class="bx bx-right-arrow-alt"></i>Tags</a></li>
+            </ul>
+        </li> --}}
+
+
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-paper-plane'></i>
+                </div>
+                <div class="menu-title">Inquiries</div>
+            </a>
+            <ul>
+                <li>
+                    <a href="{{ route('admin.contact-inquiry.index') }}">
+                        <div class="parent-icon"><i class='bx bx-cookie'></i>
+                        </div>
+                        <div class="menu-title">Contact Inquries</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.newsletter-management.index') }}">
+                        <div class="parent-icon"><i class='bx bx-cookie'></i>
+                        </div>
+                        <div class="menu-title">Newsletter Management</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
     </ul>
 </div>

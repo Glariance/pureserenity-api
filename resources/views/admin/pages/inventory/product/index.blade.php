@@ -30,15 +30,27 @@
             <hr />
             <div class="card">
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Category</label>
+                            <select id="category-filter" class="form-select">
+                                <option value="">All Categories</option>
+                                @foreach ($categories as $parent)
+                                    <option value="" disabled>— {{ $parent->name }} —</option>
+                                    @foreach ($parent->children as $child)
+                                        <option value="{{ $child->id }}">{{ $parent->name }} > {{ $child->name }}</option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                     <table id="product-table" class="table table-striped table-bordered">
                         <thead>
                             <tr>
                                 <th>S.no</th>
-                                <th>Brand</th>
                                 <th>Category</th>
                                 <th>Name</th>
                                 <th>Image</th>
-                                <th>Featured</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                                 <th>Action</th>
@@ -47,11 +59,9 @@
                         <tfoot>
                             <tr>
                                 <th>S.no</th>
-                                <th>Brand</th>
                                 <th>Category</th>
                                 <th>Name</th>
                                 <th>Image</th>
-                                <th>Featured</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                                 <th>Action</th>
@@ -66,6 +76,9 @@
         <script>
             $(document).ready(function() {
                 loadDatatable();
+                $('#category-filter').on('change', function() {
+                    loadDatatable();
+                });
             });
 
             function loadDatatable() {
@@ -77,19 +90,21 @@
                 let table = $('#product-table').DataTable({
                     processing: true,
                     serverSide: true,
-                    ajax: "{{ route('admin.inventory.product.index') }}",
+                    ajax: {
+                        url: "{{ route('admin.inventory.product.index') }}",
+                        data: function(d) {
+                            d.category_id = $('#category-filter').val();
+                        }
+                    },
                     lengthChange: true, // 👈 Enables "per page" dropdown
                     lengthMenu: [10, 25, 50, 100, 250, 500], // 👈 Custom per page options
                     pageLength: 25, // 👈 Default per page
-                    columns: [{
+                    columns: [
+                        {
                             data: 'DT_RowIndex',
                             name: 'DT_RowIndex',
                             orderable: false,
                             searchable: false
-                        },
-                        {
-                            data: 'brand_id',
-                            name: 'brand_id'
                         },
                         {
                             data: 'category_id',
@@ -102,10 +117,6 @@
                         {
                             data: 'image',
                             name: 'image'
-                        },
-                        {
-                            data: 'featured',
-                            name: 'featured'
                         },
                         {
                             data: 'status',

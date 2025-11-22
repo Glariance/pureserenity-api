@@ -74,6 +74,25 @@ class NewsLetterController extends Controller
     }
 
     /**
+     * Public subscription endpoint (e.g., footer form).
+     */
+    public function subscribe(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|unique:newsletters,email',
+        ], [
+            'email.unique' => "The entered email already exists in our record",
+        ]);
+
+        Newsletter::create([
+            'email' => $request->email,
+            'is_subscribed' => true,
+        ]);
+
+        return response()->json(['success' => 'Subscribed successfully!']);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)

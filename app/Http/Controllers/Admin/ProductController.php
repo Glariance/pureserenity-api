@@ -22,7 +22,12 @@ class ProductController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $data = Product::orderBy('status', 'desc')->orderBy('id', 'desc');
+            $data = Product::with(['brand', 'category'])
+                ->when(request('category_id'), function ($query, $categoryId) {
+                    $query->where('category_id', $categoryId);
+                })
+                ->orderBy('status', 'desc')
+                ->orderBy('id', 'desc');
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -32,9 +37,9 @@ class ProductController extends Controller
                     $showBtn = '<a href="javascript:;" onclick="showAjaxModal(\'View Product Details\', \'view\', \'' . $showUrl . '\')" class="btn btn-light"><i class="lni lni-eye"></i></a>';
                     // $editBtn = '<a href="javascript:;" onclick="showAjaxModal(\'Edit Product Details\', \'Update\', \'' . $editUrl . '\')" class="btn btn-light"><i class="bx bx-edit-alt"></i></a>';
                     $editBtn = '<a href="' . $editUrl . '" class="btn btn-light"><i class="bx bx-edit-alt"></i></a>';
-                    $deleteBtn = '<a href="javascript:;" onclick="deleteTag(' . $row->id . ', `' . route('admin.inventory.product.destroy', $row->id) . '`)" class="btn btn-light"><i class="bx bx-trash"></i></a>';
+                    $deleteBtn = '<a href="javascript:;" onclick="deleteTag(' . $row->id . ', `' . route('admin.inventory.product.destroy', $row->id) . '`)" class="btn btn-light text-danger"><i class="bx bx-trash"></i></a>';
                     // $deleteBtn
-                    return $showBtn . ' ' . $editBtn;
+                    return $showBtn . ' ' . $editBtn . ' ' . $deleteBtn;
                 })
                 ->addColumn('image', function ($row) {
                     $imagePath = asset("storage/" . $row->mediaFeatured?->path);
@@ -58,7 +63,14 @@ class ProductController extends Controller
                 ->rawColumns(['action', 'status', 'featured', 'image']) // Allow HTML in these columns
                 ->make(true);
         }
-        return view('admin.pages.inventory.product.index');
+        $categories = Category::where('status', 1)
+            ->whereNull('parent_id')
+            ->with(['children' => function ($query) {
+                $query->where('status', 1)->orderBy('name');
+            }])
+            ->orderBy('name')
+            ->get();
+        return view('admin.pages.inventory.product.index', compact('categories'));
     }
 
     /**
@@ -66,7 +78,14 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.inventory.product.create');
+        $categories = Category::where('status', 1)
+            ->whereNull('parent_id')
+            ->with(['children' => function ($query) {
+                $query->where('status', 1)->orderBy('name');
+            }])
+            ->orderBy('name')
+            ->get();
+        return view('admin.pages.inventory.product.create', compact('categories'));
     }
 
     /**
@@ -83,6 +102,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'amazon_link' => 'nullable|url|max:2048',
             'image' => 'required|file|mimes:jpeg,png,jpg,gif,svg,webp|max:20480',
+            'category_id' => 'required|exists:categories,id',
             'created_by' => 'required|exists:users,id',
         ], [
             'image.required' => 'Please upload at least one product image.',
@@ -99,7 +119,7 @@ class ProductController extends Controller
                 'base_price' => 0,
                 'stock' => 0,
                 'has_variations' => 0,
-                'category_id' => $this->resolveDefaultCategoryId(),
+                'category_id' => $validated['category_id'] ?? $this->resolveDefaultCategoryId(),
                 'brand_id' => $this->resolveDefaultBrandId(),
                 'has_discount' => 0,
                 'discount_type' => null,
@@ -135,8 +155,15 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with(['brand', 'category', 'media'])->findOrFail($id);
-        return view('admin.pages.inventory.product.show', compact('product'));
+        $product = Product::with(['brand', 'category.parent', 'media'])->findOrFail($id);
+        $categories = Category::where('status', 1)
+            ->whereNull('parent_id')
+            ->with(['children' => function ($query) {
+                $query->where('status', 1)->orderBy('name');
+            }])
+            ->orderBy('name')
+            ->get();
+        return view('admin.pages.inventory.product.show', compact('product', 'categories'));
     }
 
     /**
@@ -146,7 +173,14 @@ class ProductController extends Controller
     {
         $product = Product::with(['media', 'mediaFeatured'])->findOrFail($id);
 
-        return view('admin.pages.inventory.product.edit', compact('product'));
+        $categories = Category::where('status', 1)
+            ->whereNull('parent_id')
+            ->with(['children' => function ($query) {
+                $query->where('status', 1)->orderBy('name');
+            }])
+            ->orderBy('name')
+            ->get();
+        return view('admin.pages.inventory.product.edit', compact('product', 'categories'));
     }
 
     /**
@@ -161,16 +195,21 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'amazon_link' => 'nullable|url|max:2048',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:20480',
+            'category_id' => 'required|exists:categories,id',
+            'status' => 'nullable|in:0,1',
         ]);
 
         DB::beginTransaction();
 
         try {
+            $status = $request->boolean('status');
             $product->update([
                 'name' => $validated['name'],
                 'slug' => $this->generateUniqueSlug($validated['name'], $product->id),
                 'description' => $validated['description'] ?? null,
                 'amazon_link' => $validated['amazon_link'] ?? null,
+                'category_id' => $validated['category_id'],
+                'status' => $status ? 1 : 0,
             ]);
 
             if ($request->hasFile('image')) {
@@ -182,7 +221,6 @@ class ProductController extends Controller
             return response()->json([
                 'success' => 'Product updated successfully.',
                 'product' => $product->load('media'),
-                'redirect' => route('admin.inventory.product.index')
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -199,7 +237,28 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::with('media')->findOrFail($id);
+
+        DB::beginTransaction();
+        try {
+            $product->media()->each(function ($media) {
+                if ($media->path) {
+                    Storage::disk('public')->delete($media->path);
+                }
+                $media->delete();
+            });
+
+            $product->delete();
+
+            DB::commit();
+            return response()->json(['success' => 'Product deleted successfully.']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to delete product.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     private function generateUniqueSlug(string $name, ?int $ignoreId = null): string
@@ -260,9 +319,8 @@ class ProductController extends Controller
         }
 
         $product->media()->each(function ($media) {
-            $storedPath = ltrim(str_replace('storage/', '', (string) $media->path), '/');
-            if ($storedPath) {
-                Storage::disk('public')->delete($storedPath);
+            if ($media->path) {
+                Storage::disk('public')->delete($media->path);
             }
             $media->delete();
         });

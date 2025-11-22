@@ -10,57 +10,59 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class ProductController extends Controller
+class PetController extends Controller
 {
     /**
-     * Product landing page payload: CMS content + products + categories.
-     */
+    * Pet landing payload: CMS content + categories + products (pet-only).
+    */
     public function show(Request $request): JsonResponse
     {
-        $slug = $request->query('slug', 'products');
+        $slug = $request->query('slug', 'pets');
 
-        // Try the requested slug, then fall back to "shop" if not found.
         $page = CmsPage::query()
             ->where('page_slug', $slug)
             ->with([
-                'sections' => function ($query) {
-                    $query->orderBy('section_sort_order');
-                },
-                'sections.fields' => function ($query) {
-                    $query->orderBy('field_group')
-                        ->orderBy('id');
-                },
+                'sections' => fn($q) => $q->orderBy('section_sort_order'),
+                'sections.fields' => fn($q) => $q->orderBy('field_group')->orderBy('id'),
             ])
             ->first();
 
-        if ($page === null && $slug !== 'shop') {
+        if ($page === null && $slug !== 'pets') {
             $page = CmsPage::query()
-                ->where('page_slug', 'shop')
+                ->where('page_slug', 'pets')
                 ->with([
-                    'sections' => function ($query) {
-                        $query->orderBy('section_sort_order');
-                    },
-                    'sections.fields' => function ($query) {
-                        $query->orderBy('field_group')
-                            ->orderBy('id');
-                    },
+                    'sections' => fn($q) => $q->orderBy('section_sort_order'),
+                    'sections.fields' => fn($q) => $q->orderBy('field_group')->orderBy('id'),
                 ])
                 ->first();
         }
 
         $sections = $page ? $this->formatSections($page->sections) : [];
 
-        $categories = Category::query()
-            ->where('status', 1)
-            ->orderBy('name')
-            ->get(['id', 'parent_id', 'name', 'slug']);
+        // Gather pet categories (children of "pets" or any category with slug/name containing "pet")
+        $categories = Category::where('status', 1)->get(['id', 'parent_id', 'name', 'slug']);
+        $petsParent = $categories->first(function ($c) {
+            $slug = strtolower($c->slug ?? '');
+            $name = strtolower($c->name ?? '');
+            return $slug === 'pets' || $name === 'pets';
+        });
+
+        $petChildren = $categories->filter(function ($c) use ($petsParent) {
+            if ($petsParent && $c->parent_id === $petsParent->id) {
+                return true;
+            }
+            $slug = strtolower($c->slug ?? '');
+            $name = strtolower($c->name ?? '');
+            return str_contains($slug, 'pet') || str_contains($name, 'pet');
+        })->values();
+
+        $allowedCategoryIds = $petChildren->pluck('id')->all();
 
         $products = ProductResource::collection(
-            $this->buildQuery($request)->get()
+            $this->buildQuery($request, $allowedCategoryIds)->get()
         );
 
         return response()->json([
@@ -75,72 +77,20 @@ class ProductController extends Controller
                 ],
                 'sections' => $sections,
             ],
-            'categories' => $categories,
+            'categories' => $petChildren->all(),
             'products' => $products,
         ]);
     }
 
-    /**
-     * Retrieve products with optional filtering.
-     */
-    public function index(Request $request): AnonymousResourceCollection
-    {
-        $products = $this->buildQuery($request)->get();
-
-        return ProductResource::collection($products);
-    }
-
-    /**
-     * Retrieve featured products only.
-     */
-    public function featured(Request $request): AnonymousResourceCollection
-    {
-        $request->merge(['featured' => true]);
-
-        $products = $this->buildQuery($request)->get();
-
-        return ProductResource::collection($products);
-    }
-
-    /**
-     * Base query shared across product endpoints.
-     */
-    protected function buildQuery(Request $request): Builder
+    protected function buildQuery(Request $request, array $allowedCategoryIds): Builder
     {
         $query = Product::query()
             ->with(['category', 'mediaFeatured'])
-            ->when(! $request->boolean('include_inactive'), function (Builder $builder) {
-                $builder->where('status', 1);
-            })
-            ->when($request->boolean('featured'), function (Builder $builder) {
-                $builder->where('featured', 1);
-            })
-            ->when($request->boolean('new'), function (Builder $builder) {
-                $builder->where('new', 1);
-            })
-            ->when($request->boolean('top'), function (Builder $builder) {
-                $builder->where('top', 1);
-            })
-            ->when($request->filled('category'), function (Builder $builder) use ($request) {
-                $category = $request->input('category');
-
-                if (is_numeric($category)) {
-                    $builder->where('category_id', $category);
-                } else {
-                    $builder->whereHas('category', function (Builder $inner) use ($category) {
-                        $inner->where('slug', $category);
-                    });
-                }
-            })
-            ->when($request->filled('search'), function (Builder $builder) use ($request) {
-                $search = $request->input('search');
-
-                $builder->where(function (Builder $inner) use ($search) {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            })
+            ->whereIn('category_id', $allowedCategoryIds ?: [-1]) // if none, no products
+            ->when(!$request->boolean('include_inactive'), fn(Builder $b) => $b->where('status', 1))
+            ->when($request->boolean('featured'), fn(Builder $b) => $b->where('featured', 1))
+            ->when($request->boolean('new'), fn(Builder $b) => $b->where('new', 1))
+            ->when($request->boolean('top'), fn(Builder $b) => $b->where('top', 1))
             ->orderByDesc('featured')
             ->orderBy('name');
 
@@ -162,7 +112,7 @@ class ProductController extends Controller
 
                 if ($section->section_type === 'repeater') {
                     $base['items'] = $fields
-                        ->groupBy(static fn ($field) => $field->field_group ?? 'default')
+                        ->groupBy(static fn($field) => $field->field_group ?? 'default')
                         ->sortKeys()
                         ->map(static function (Collection $fieldGroup) {
                             return $fieldGroup

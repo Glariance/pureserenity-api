@@ -1,5 +1,5 @@
 <div class="card-body">
-    <table class="table table-bordered">
+    <table class="table table-bordered align-middle text-break" style="table-layout: fixed;">
         <tr>
             <th class="w-25">Name</th>
             <td class="w-75">{{ $category->name }}</td>
@@ -27,8 +27,11 @@
         @isset($category->media)
             <tr>
                 <th>Image</th>
-                <td>
-                    <img src="{{ $category->media->path }}" alt="{{ $category->slug }}">
+                <td class="py-3">
+                    <div class="d-flex flex-wrap gap-2">
+                        <img src="{{ $category->media->path }}" alt="{{ $category->slug }}" class="rounded border"
+                            style="max-width: 280px; max-height: 240px; object-fit: contain;">
+                    </div>
                 </td>
             </tr>
         @endisset

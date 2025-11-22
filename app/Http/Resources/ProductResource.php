@@ -31,6 +31,7 @@ class ProductResource extends JsonResource
             'status' => (bool) $this->status,
             'image_url' => $featuredMediaPath ? asset('storage/' . ltrim($featuredMediaPath, '/')) : null,
             'affiliate_link' => data_get($this, 'affiliate_link'),
+            'amazon_link' => data_get($this, 'amazon_link'),
             'created_at' => optional($this->created_at)->toIso8601String(),
             'updated_at' => optional($this->updated_at)->toIso8601String(),
         ];
