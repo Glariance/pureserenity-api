@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
+
     })
 
     // --------------------------
@@ -34,12 +35,16 @@ return Application::configure(basePath: dirname(__DIR__))
     // --------------------------
     ->withMiddleware(function (Middleware $middleware) {
 
+
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+
         $middleware->redirectGuestsTo(function (Request $request) {
             return $request->is('admin/*')
                 ? route('admin.login')
                 : route('login');
         });
 
+        
         $middleware->redirectUsersTo(function (Request $request) {
             return $request->user()->isAdmin()
                 ? 'admin/dashboard'

@@ -1,9 +1,10 @@
 <div class="card-body">
     <div class="card-title d-flex align-items-center justify-content-between">
         <h5 class="mb-0 text-white">Manage Fields for {{ $section->section_name }}</h5>
-        <button type="button" class="btn btn-light px-5 radius-30" onclick="addNewField()">
+        {{-- Add Field disabled per request --}}
+        {{-- <button type="button" class="btn btn-light px-5 radius-30" onclick="addNewField()">
             <i class="bx bx-plus mr-1"></i> Add Field
-        </button>
+        </button> --}}
     </div>
     <hr>
 
@@ -33,10 +34,11 @@
                                         </a>
                                     @endif
                                 @endif
-                                <button class="btn btn-light delete-btn" type="button"
+                                {{-- Delete disabled per request --}}
+                                {{-- <button class="btn btn-light delete-btn" type="button"
                                     onclick="deleteField({{ $field->id }}, `{{ route('admin.cms.section.field.delete', ['id' => $field->id]) }}`)">
                                     <i class="bx bx-trash"></i>
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>
@@ -72,11 +74,12 @@
                             <option value="image">Image</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    {{-- Remove field button disabled per request --}}
+                    {{-- <div class="col-md-2">
                         <button type="button" class="btn btn-light mt-4" onclick="removeField(this)">
                             <i class="bx bx-trash me-0"></i>
                         </button>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         `;

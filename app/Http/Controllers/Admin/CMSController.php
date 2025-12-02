@@ -200,6 +200,17 @@ class CMSController extends Controller
         try {
             $section = CmsPageSection::findOrFail($sectionId);
 
+            $deletedGroups = [];
+            // Delete selected groups (remove all fields in those groups)
+            if ($request->filled('delete_groups')) {
+                foreach ((array) $request->input('delete_groups') as $groupName) {
+                    CmsPageSectionField::where('cms_page_section_id', $sectionId)
+                        ->where('field_group', $groupName)
+                        ->delete();
+                    $deletedGroups[] = $groupName;
+                }
+            }
+
             // Update existing fields
             // dd($request->fields);
             if ($request->has('fields')) {
@@ -236,6 +247,29 @@ class CMSController extends Controller
             }
 
             return response()->json(['success' => "Group & Fields updated successfully", 'section_id' => $section->id], 200); //->back()->with('success', 'Fields updated successfully.');
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function sectionGroupFieldDelete(Request $request, $sectionId)
+    {
+        try {
+            $section = CmsPageSection::findOrFail($sectionId);
+            $request->validate([
+                'group_name' => 'required|string'
+            ]);
+
+            $groupName = $request->input('group_name');
+
+            CmsPageSectionField::where('cms_page_section_id', $sectionId)
+                ->where('field_group', $groupName)
+                ->delete();
+
+            return response()->json([
+                'success' => "Group '{$groupName}' deleted successfully",
+                'section_id' => $section->id
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

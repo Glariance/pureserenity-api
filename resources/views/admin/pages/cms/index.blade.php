@@ -14,7 +14,8 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group  ">
-                        <button type="button" class="btn btn-light px-5">Page Settings</button>
+                        <button type="button" class="btn btn-light px-5" onclick="showAjaxModal('Edit Page Detail', 'Update', `{{ route('admin.cms.page.create', ['slug' => $slug]) }}`)">Page Settings</button>
+                        {{-- 
                         <button type="button" class="btn btn-light dropdown-toggle dropdown-toggle-split"
                             data-bs-toggle="dropdown"><span class="visually-hidden">Toggle Dropdown</span>
                         </button>
@@ -24,6 +25,7 @@
                             <a class="dropdown-item" href="javascript:;"
                                 onclick="deletePage({{ $page->id }}, `{{ route('admin.cms.page.delete', ['id' => $page->id]) }}`)">Delete</a>
                         </div>
+                         --}}
                     </div>
                 </div>
             </div>
@@ -32,12 +34,13 @@
                     <div class="d-flex">
                         <div class="col-lg-3 border-end pe-3">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">Sections</h5>
-                                <button type="button" class="btn btn-light"
+                                <h5 class="mb-0">Sections:</h5>
+                                {{-- Section creation disabled per client request --}}
+                                {{-- <button type="button" class="btn btn-light"
                                     onclick="showAjaxModal(`Create New Section in {{ $page->page_title }} Page`, 'Create', `{{ route('admin.cms.section.create', ['pageId' => $page->id]) }}`)">
                                     <i class="bx bx-plus mr-1"></i>
                                     Add
-                                </button>
+                                </button> --}}
                             </div>
                             <hr>
                             <ul class="nav flex-column border-0 mt-5">

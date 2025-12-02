@@ -2,10 +2,9 @@
 <div class="card-title d-flex align-items-center justify-content-between">
     <h5 class="mb-0 text-white">Manage {{ $section->section_name }} Group Fields</h5>
     @if ($section->repeaterGroups->isNotEmpty())
-        <div>
-            <button type="button" class="btn btn-sm btn-light"
-                onclick="showAjaxModal('Create New Field in Group', 'Create', `{{ route('admin.cms.section.addFieldsInGroup', ['sectionId' => $section->id]) }}`)">
-                <i class="bx bx-plus"></i> Add Field
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-light" onclick="addNewGroup()">
+                <i class="bx bx-plus"></i> Add Group
             </button>
             <button type="button" class="btn btn-sm btn-light" id="btnCopyGroup">
                 <i class="bx bx-copy"></i> Copy Group
@@ -39,10 +38,11 @@
                                     </a>
                                 @endif
                             @endif
-                            <button class="btn btn-light delete-btn" type="button"
+                            {{-- Delete disabled per request --}}
+                            {{-- <button class="btn btn-light delete-btn" type="button"
                                 onclick="deleteField({{ $field->id }}, `{{ route('admin.cms.section.field.delete', ['id' => $field->id]) }}`)">
                                 <i class="bx bx-trash"></i>
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
                 </div>
@@ -52,14 +52,23 @@
     @if ($section->repeaterGroups->isNotEmpty())
         <div class="accordion" id="accordionPanelsStayOpenExample">
             @foreach ($section->repeaterGroups as $index => $group)
-                <div class="accordion-item">
+                <div class="accordion-item" id="group-accordion-{{ $index }}">
                     <h2 class="accordion-header" id="panelsStayOpen-heading{{ $index }}">
-                        <button class="accordion-button {{ $index == 0 ? '' : 'collapsed' }}" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse{{ $index }}"
-                            aria-expanded="{{ $index == 0 ? 'true' : 'false' }}"
-                            aria-controls="panelsStayOpen-collapse{{ $index }}">
-                            {{ ucfirst($group->field_group) }}
-                        </button>
+                        <div class="d-flex align-items-center justify-content-between pe-2">
+                            <button class="accordion-button {{ $index == 0 ? '' : 'collapsed' }}" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse{{ $index }}"
+                                aria-expanded="{{ $index == 0 ? 'true' : 'false' }}"
+                                aria-controls="panelsStayOpen-collapse{{ $index }}">
+                                {{ ucfirst($group->field_group) }}
+                            </button>
+                            <button type="button"
+                                class="btn btn-sm btn-light ms-2 d-flex align-items-center justify-content-center"
+                                style="width: 38px; height: 38px; border: none;"
+                                onclick="deleteGroup('{{ $group->field_group }}')"
+                                aria-label="Delete group">
+                                <i class="bx bx-trash" style="font-size: 22px; color: #dc3545;"></i>
+                            </button>
+                        </div>
                     </h2>
                     <div id="panelsStayOpen-collapse{{ $index }}"
                         class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}"
@@ -73,11 +82,12 @@
                                                 <label>{{ ucfirst($field->field_name) }}
                                                     ({{ $field->field_type }})
                                                 </label>
-                                                @if ($field->field_type === 'textarea')
+                                                {{-- Delete disabled per request --}}
+                                                {{-- @if ($field->field_type === 'textarea')
                                                     <a href="javascript:;"
                                                         onclick="deleteField({{ $field->id }}, `{{ route('admin.cms.section.field.delete', ['id' => $field->id]) }}`)"
                                                         class="text-light delete-btn">(Delete)</a>
-                                                @endif
+                                                @endif --}}
                                             </div>
                                             <div class="input-group ">
                                                 @if ($field->field_type === 'text')
@@ -96,12 +106,13 @@
                                                         </a>
                                                     @endif
                                                 @endif
-                                                @if ($field->field_type != 'textarea')
+                                                {{-- Delete disabled per request --}}
+                                                {{-- @if ($field->field_type != 'textarea')
                                                     <button class="btn btn-light delete-btn" type="button"
                                                         onclick="deleteField({{ $field->id }}, `{{ route('admin.cms.section.field.delete', ['id' => $field->id]) }}`)">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
-                                                @endif
+                                                @endif --}}
                                             </div>
                                         </div>
                                     </div>
@@ -121,6 +132,7 @@
 
 
     <div id="newGroups"></div>
+    <div id="deleteGroups"></div>
 
     <div class="col-12">
         <button type="submit" id="btnSectionField" class="btn btn-light px-5 mt-5">Save Fields</button>
@@ -133,12 +145,15 @@
         let uniqueId = Date.now();
         let newGroup = `
             <div class="col-12 new-group mt-3">
-                <div class="group-header d-flex align-items-center bg-light p-2">
+                <div class="group-header d-flex align-items-center justify-content-between bg-light p-2">
+                    <div class="d-flex align-items-center w-100 gap-2">
                     <input type="text" name="new_groups[${uniqueId}]" class="form-control mr-2 w-50"
                         placeholder="Enter group name" value="Group_1" readonly>
-                        <button type="button" class="btn btn-sm btn-light mt-1" onclick="addNewField(${uniqueId})">
-                            <i class="bx bx-plus"></i> Add Fields
-                        </button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                        onclick="removeNewGroup(this)">
+                        <i class="bx bx-trash"></i> Remove
+                    </button>
                 </div>
                 <div class="group-fields" id="group-fields-${uniqueId}"></div>
             </div>
@@ -163,11 +178,12 @@
                             <option value="image">Image</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    {{-- Remove field disabled per request --}}
+                    {{-- <div class="col-md-2">
                         <button type="button" class="btn btn-light mt-4" onclick="removeField(this)">
                             <i class="bx bx-trash me-0"></i>
                         </button>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         `;
@@ -176,6 +192,37 @@
 
     function removeField(button) {
         button.closest('.new-setting').remove();
+    }
+
+    function removeNewGroup(button) {
+        button.closest('.new-group').remove();
+    }
+
+    function deleteGroup(groupName) {
+        confirmDelete(() => {
+            const url = "{{ route('admin.cms.section.group.delete', ['sectionId' => $section->id]) }}";
+            const formData = new FormData();
+            formData.append('_token', "{{ csrf_token() }}");
+            formData.append('group_name', groupName);
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function() {
+                    loadPage(
+                        "{{ route('admin.cms.section.fields', ['sectionId' => $section->id]) }}",
+                        '#load-field-page'
+                    );
+                    successMessage('Group deleted successfully');
+                },
+                error: function() {
+                    errorMessage('Unable to delete group. Please try again.');
+                }
+            });
+        });
     }
     $(function() {
         $('#btnCopyGroup').click(function() {

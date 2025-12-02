@@ -71,6 +71,7 @@ Route::middleware(['auth', 'role:'.config('constants.ADMIN')])->group(function (
                 Route::post('/store', [CMSController::class, 'sectionFieldStore'])->name('section.field.store');
                 Route::post('/group/store', [CMSController::class, 'sectionGroupFieldStore'])->name('section.group.store');
                 Route::get('/group/copy', [CMSController::class, 'sectionGroupFieldCopy'])->name('section.group.copy');
+                Route::post('/group/delete', [CMSController::class, 'sectionGroupFieldDelete'])->name('section.group.delete');
                 Route::get('/group', [CMSController::class, 'addFieldsInGroup'])->name('section.addFieldsInGroup');
                 Route::post('/group/field/store', [CMSController::class, 'addFieldsInGroupPost'])->name('section.group.field.post');
             });
